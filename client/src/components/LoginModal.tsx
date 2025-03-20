@@ -102,6 +102,15 @@ export default function LoginModal({
 
   // Handle register form submission
   const onRegisterSubmit = async (values: RegisterFormValues) => {
+    // Validate passwords match before submitting
+    if (values.password !== values.confirmPassword) {
+      registerForm.setError("confirmPassword", {
+        type: "manual",
+        message: "Passwords don't match"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       await register(values.username, values.password);
@@ -111,11 +120,19 @@ export default function LoginModal({
       });
       onClose();
     } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "Unable to create account",
-        variant: "destructive",
-      });
+      const errorMessage = error instanceof Error ? error.message : "Unable to create account";
+      if (errorMessage.includes("Username already taken")) {
+        registerForm.setError("username", {
+          type: "manual",
+          message: "Username already taken"
+        });
+      } else {
+        toast({
+          title: "Registration failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +140,12 @@ export default function LoginModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="login-modal-description">
+        <div id="login-modal-description" className="sr-only">
+          {isRegistering 
+            ? t("registerDescription") 
+            : t("loginDescription")}
+        </div>
         <DialogHeader className="bg-primary px-4 py-2 text-white rounded-t-md -mt-4 -mx-4 mb-4">
           <div className="flex justify-between items-center">
             <DialogTitle>

@@ -164,6 +164,14 @@ const translations: TranslationDict = {
   tamaRegion: {
     ja: "多摩地域",
     en: "Tama Region"
+  },
+  loginDescription: {
+    ja: "あなたのアカウントにログインしてください",
+    en: "Log in to your account"
+  },
+  registerDescription: {
+    ja: "新しいアカウントを作成してください",
+    en: "Create a new account"
   }
 };
 
