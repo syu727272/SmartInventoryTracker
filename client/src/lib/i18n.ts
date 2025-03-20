@@ -172,6 +172,18 @@ const translations: TranslationDict = {
   registerDescription: {
     ja: "新しいアカウントを作成してください",
     en: "Create a new account"
+  },
+  usernamePlaceholder: {
+    ja: "ユーザー名を入力",
+    en: "Enter username"
+  },
+  passwordPlaceholder: {
+    ja: "パスワードを入力",
+    en: "Enter password"
+  },
+  confirmPasswordPlaceholder: {
+    ja: "パスワードを再入力",
+    en: "Confirm password"
   }
 };
 

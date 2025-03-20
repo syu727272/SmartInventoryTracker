@@ -140,7 +140,7 @@ export default function LoginModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md" aria-describedby="login-modal-description">
+      <DialogContent className="sm:max-w-sm" aria-describedby="login-modal-description">
         <div id="login-modal-description" className="sr-only">
           {isRegistering 
             ? t("registerDescription") 
