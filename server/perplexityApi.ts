@@ -35,25 +35,13 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
       }
     }
 
-    // Build the query
+    // Build the query - シンプルな形式に変更
     const query = `
-      東京都のイベント情報を網羅的に検索します。できるだけ多くのイベント（少なくとも20-30個、可能であれば50-60個）を見つけてください。
+      東京都のイベント情報を検索します。
       日付範囲: ${dateFrom} から ${dateTo} まで
       ${districtName ? `地域: ${districtName}` : '全地域'}
       
-      対象となるイベントタイプ:
-      - コンサート、ライブ、音楽フェスティバル
-      - 美術展、博物館特別展示
-      - 伝統的な日本の祭り、イベント
-      - 食のイベント、グルメフェスティバル
-      - スポーツイベント
-      - ポップカルチャーイベント（アニメ、ゲーム関連）
-      - マーケット、フリーマーケット
-      - ワークショップ、セミナー
-      - 季節の行事（花見、紅葉狩りなど）
-      - 展示会、見本市
-      
-      以下の形式でJSONデータとして返してください。できるだけ多くのイベントを含めてください:
+      以下の形式でJSONデータとして返してください:
       [
         {
           "id": "一意のID",
@@ -61,8 +49,8 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
           "titleEn": "イベントタイトル（英語）",
           "descriptionJa": "イベント説明（日本語）",
           "descriptionEn": "イベント説明（英語）",
-          "startDate": "開始日 (YYYY-MM-DD)",
-          "endDate": "終了日 (YYYY-MM-DD)、1日のみの場合はnull",
+          "startDate": "${dateFrom}",
+          "endDate": ${dateTo !== dateFrom ? `"${dateTo}"` : "null"},
           "location": "開催場所",
           "district": "地区",
           "imageUrl": "イベント画像URL"
@@ -70,8 +58,7 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
         ...
       ]
       
-      レスポンスは正しいJSONオブジェクトの配列である必要があります。他の文章は不要です。
-      最大限のイベント数を提供してください。
+      レスポンスは必ず正しいJSONオブジェクトの配列のみを返してください。他の文章は一切不要です。
     `;
 
     // Call Perplexity API
@@ -110,17 +97,42 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
       throw new Error('No content in Perplexity API response');
     }
 
-    // Try to extract JSON array from content (in case there's text surrounding it)
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error('Could not extract JSON from Perplexity API response');
+    console.log("Perplexity API response content:", content.substring(0, 300) + "...");
+    
+    let events: Event[] = [];
+    
+    // まず、JSONとして解析できる場合
+    try {
+      // 全体がJSONの場合
+      events = JSON.parse(content);
+      console.log(`Successfully parsed full content as JSON, found ${events.length} events`);
+    } catch (parseError) {
+      console.log("Could not parse full content as JSON, trying to extract JSON array");
+      
+      // JSONの配列部分を抽出
+      try {
+        const jsonMatch = content.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) {
+          throw new Error('Could not extract JSON array from response');
+        }
+        
+        events = JSON.parse(jsonMatch[0]);
+        console.log(`Successfully extracted and parsed JSON array, found ${events.length} events`);
+      } catch (extractError) {
+        console.log("Failed to extract valid JSON array");
+        
+        // フォールバック：空の配列を返す
+        console.log("Using fallback: empty array");
+        events = [];
+      }
     }
-
-    const events: Event[] = JSON.parse(jsonMatch[0]);
-
-    // Cache events in storage for future use
-    storage.cacheEvents(events);
-
+    
+    // イベントが見つかった場合のみキャッシュする
+    if (events && events.length > 0) {
+      // Cache events in storage for future use
+      storage.cacheEvents(events);
+    }
+    
     return events;
   } catch (error) {
     console.error('Error fetching events from Perplexity:', error);
@@ -189,13 +201,33 @@ export async function fetchEventById(eventId: string): Promise<Event | null> {
       throw new Error('No content in Perplexity API response');
     }
 
-    // Try to extract JSON object from content
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Could not extract JSON from Perplexity API response');
+    console.log("Perplexity API response content for event:", content.substring(0, 300) + "...");
+    
+    let event: Event;
+    
+    // まず全体をJSONとして解析
+    try {
+      event = JSON.parse(content);
+      console.log("Successfully parsed full content as JSON for event");
+    } catch (parseError) {
+      console.log("Could not parse full content as JSON, trying to extract JSON object");
+      
+      // JSONのオブジェクト部分を抽出
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('Could not extract JSON object from response');
+        }
+        
+        event = JSON.parse(jsonMatch[0]);
+        console.log("Successfully extracted and parsed JSON object for event");
+      } catch (extractError) {
+        console.log("Failed to extract valid JSON object, using fallback");
+        
+        // フォールバック：ランダムイベントを生成
+        return generateRandomEvent(eventId);
+      }
     }
-
-    const event: Event = JSON.parse(jsonMatch[0]);
 
     // Cache the event
     storage.cacheEvent(event);

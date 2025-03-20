@@ -12,9 +12,20 @@ import { Loader2, Search } from "lucide-react";
 export default function Home() {
   const { t } = useLanguage();
   const { user, isLoading: isAuthLoading } = useAuth();
+  // 東京時間で現在の日付を取得
+  const getTodayInTokyo = () => {
+    const now = new Date();
+    // 日本時間（UTC+9）の日付を取得
+    const tokyoTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    return tokyoTime.toISOString().split('T')[0];
+  };
+  
+  const today = getTodayInTokyo();
+  const tomorrow = new Date(new Date(today).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  
   const [searchParams, setSearchParams] = useState<SearchParams>({
-    dateFrom: new Date().toISOString().split('T')[0], // Today
-    dateTo: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 week later
+    dateFrom: today, // 東京の今日
+    dateTo: tomorrow, // 東京の明日
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
