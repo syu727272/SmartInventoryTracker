@@ -95,31 +95,41 @@ export default function LoginModal({
   const onLoginSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
+      console.log("Attempting login with:", values.username);
       await login(values.username, values.password);
+      
       toast({
         title: t("loginSuccessful"),
         description: t("welcomeBack"),
       });
+      
       onClose();
     } catch (error) {
+      console.error("Login error:", error);
+      
       // エラーメッセージを改善
       let errorTitle = t("loginFailed");
       let errorMessage = t("invalidCredentials");
       let registerHint = false;
       
-      if (error instanceof Error) {
-        if (error.message === "User is not registered") {
-          errorMessage = t("userNotRegistered");
-          errorTitle = t("loginFailed");
-          registerHint = true;
-        } else if (error.message === "Incorrect password") {
-          errorMessage = t("incorrectPassword");
-          errorTitle = t("loginFailed");
-        } else {
-          errorMessage = error.message;
-        }
+      // エラーメッセージのパターンを確認
+      const errorStr = error instanceof Error ? error.message : String(error);
+      console.log("Error message:", errorStr);
+      
+      if (errorStr.includes("User is not registered") || 
+          errorStr.includes("401: User is not registered")) {
+        errorMessage = t("userNotRegistered");
+        errorTitle = t("loginFailed");
+        registerHint = true;
+      } else if (errorStr.includes("Incorrect password") || 
+                errorStr.includes("401: Incorrect password")) {
+        errorMessage = t("incorrectPassword");
+        errorTitle = t("loginFailed");
+      } else {
+        errorMessage = errorStr;
       }
       
+      // トースト通知を表示
       toast({
         title: errorTitle,
         description: errorMessage,

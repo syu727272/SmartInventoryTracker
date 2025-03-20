@@ -11,6 +11,12 @@ async function throwIfResNotOk(res: Response) {
         data
       });
       
+      // ログイン失敗のエラーメッセージをより詳細に変換
+      if (res.status === 401 && data.message) {
+        console.log("Authentication error:", data.message);
+        throw new Error(data.message);
+      }
+      
       // Return more detailed error message if available
       if (data.errors && Array.isArray(data.errors)) {
         const errorMessages = data.errors.map((e: any) => e.message || e).join(", ");
@@ -19,6 +25,9 @@ async function throwIfResNotOk(res: Response) {
       
       throw new Error(data.message || data.error || `${res.status}: ${res.statusText}`);
     } catch (jsonError) {
+      if (jsonError instanceof Error && jsonError.message) {
+        throw jsonError; // 既に処理済みのエラーをそのまま再スロー
+      }
       // If JSON parsing fails, fallback to text
       const text = await res.text().catch(() => res.statusText);
       throw new Error(`${res.status}: ${text}`);
