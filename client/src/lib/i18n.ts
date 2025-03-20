@@ -236,6 +236,14 @@ const translations: TranslationDict = {
   confirmPasswordMinLength: {
     ja: "確認用パスワードは6文字以上である必要があります",
     en: "Confirm password must be at least 6 characters"
+  },
+  welcomeToEventFinder: {
+    ja: "東京イベントファインダーへようこそ",
+    en: "Welcome to Tokyo Event Finder"
+  },
+  welcomeDescription: {
+    ja: "ログインして東京の最新イベントを検索・お気に入り登録しましょう。あなたの興味に合わせたイベント情報をご提供します。",
+    en: "Login to search and save your favorite events in Tokyo. We'll help you discover events that match your interests."
   }
 };
 
