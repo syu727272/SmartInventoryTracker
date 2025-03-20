@@ -24,7 +24,12 @@ export default function Home() {
   
   // イベント検索クエリ - ユーザーがログインしていて、検索が実行された場合のみ有効
   const { data: events, isLoading: isEventsLoading, error } = useQuery<Event[]>({
-    queryKey: ['/api/events', searchParams.dateFrom, searchParams.dateTo, searchParams.district],
+    queryKey: [
+      '/api/events', 
+      'dateFrom', searchParams.dateFrom, 
+      'dateTo', searchParams.dateTo, 
+      'district', searchParams.district
+    ],
     enabled: !!user && !!searchParams && searchExecuted,
   });
 

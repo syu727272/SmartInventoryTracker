@@ -57,7 +57,33 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // 最初の要素はAPIパスで、残りはクエリパラメータとして扱う
+    const baseUrl = queryKey[0] as string;
+    
+    // クエリパラメータを構築
+    let url = baseUrl;
+    if (queryKey.length > 1) {
+      const params = new URLSearchParams();
+      
+      // queryKeyの残りの要素を2つずつ取り出してパラメータとして追加
+      for (let i = 1; i < queryKey.length; i += 2) {
+        const key = queryKey[i]?.toString();
+        const value = queryKey[i + 1]?.toString();
+        
+        if (key && value !== undefined && value !== null && value !== "all") {
+          params.append(key, value);
+        }
+      }
+      
+      const queryString = params.toString();
+      if (queryString) {
+        url = `${baseUrl}?${queryString}`;
+      }
+    }
+    
+    console.log("Fetching from URL:", url);
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 
