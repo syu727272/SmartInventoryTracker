@@ -186,12 +186,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Events routes
   app.get("/api/events", async (req, res) => {
     try {
+      // クエリパラメータを取得
       const dateFrom = req.query.dateFrom as string;
       const dateTo = req.query.dateTo as string;
       const district = req.query.district as string | undefined;
 
+      // 日付パラメータのバリデーション
       if (!dateFrom || !dateTo) {
         return res.status(400).json({ message: "dateFrom and dateTo are required" });
+      }
+
+      // 日付形式の確認（YYYY-MM-DD形式かどうか）
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(dateFrom) || !dateRegex.test(dateTo)) {
+        return res.status(400).json({ message: "Invalid date format. Please use YYYY-MM-DD format." });
+      }
+
+      // 日付の範囲チェック（dateFromがdateToより前であること）
+      const fromDate = new Date(dateFrom);
+      const toDate = new Date(dateTo);
+      if (fromDate > toDate) {
+        return res.status(400).json({ message: "dateFrom must be before or equal to dateTo" });
       }
 
       const searchParams: SearchParams = {
@@ -200,6 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         district,
       };
 
+      console.log("Searching events with params:", searchParams);
       const events = await fetchEvents(searchParams);
       res.json(events);
     } catch (error) {

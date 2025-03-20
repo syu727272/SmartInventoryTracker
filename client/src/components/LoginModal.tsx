@@ -130,6 +130,23 @@ export default function LoginModal({
       }
       
       // トースト通知を表示
+      // 直接DOMにトースト要素を追加して確実に表示する
+      const toastDiv = document.createElement('div');
+      toastDiv.className = 'fixed bottom-4 right-4 z-50 bg-red-500 text-white p-4 rounded shadow-lg';
+      toastDiv.innerHTML = `
+        <div class="font-bold">${errorTitle}</div>
+        <div>${errorMessage}</div>
+      `;
+      document.body.appendChild(toastDiv);
+      
+      // 5秒後に削除
+      setTimeout(() => {
+        if (document.body.contains(toastDiv)) {
+          document.body.removeChild(toastDiv);
+        }
+      }, 5000);
+      
+      // 通常のトーストも試みる
       console.log("Displaying toast with:", {
         title: errorTitle,
         description: errorMessage,
