@@ -14,7 +14,7 @@ export default function Home() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [searchParams, setSearchParams] = useState<SearchParams>({
     dateFrom: new Date().toISOString().split('T')[0], // Today
-    dateTo: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 day later
+    dateTo: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 week later
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);

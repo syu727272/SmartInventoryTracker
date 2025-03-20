@@ -16,7 +16,7 @@ export default function SearchResults({
   events, 
   isLoading, 
   error,
-  initialPageSize = 10 
+  initialPageSize = 20 
 }: SearchResultsProps) {
   const { t } = useLanguage();
   const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);

@@ -37,11 +37,23 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
 
     // Build the query
     const query = `
-      東京都のイベント情報を検索します。
+      東京都のイベント情報を網羅的に検索します。できるだけ多くのイベント（少なくとも20-30個、可能であれば50-60個）を見つけてください。
       日付範囲: ${dateFrom} から ${dateTo} まで
       ${districtName ? `地域: ${districtName}` : '全地域'}
       
-      以下の形式でJSONデータとして返してください:
+      対象となるイベントタイプ:
+      - コンサート、ライブ、音楽フェスティバル
+      - 美術展、博物館特別展示
+      - 伝統的な日本の祭り、イベント
+      - 食のイベント、グルメフェスティバル
+      - スポーツイベント
+      - ポップカルチャーイベント（アニメ、ゲーム関連）
+      - マーケット、フリーマーケット
+      - ワークショップ、セミナー
+      - 季節の行事（花見、紅葉狩りなど）
+      - 展示会、見本市
+      
+      以下の形式でJSONデータとして返してください。できるだけ多くのイベントを含めてください:
       [
         {
           "id": "一意のID",
@@ -59,6 +71,7 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
       ]
       
       レスポンスは正しいJSONオブジェクトの配列である必要があります。他の文章は不要です。
+      最大限のイベント数を提供してください。
     `;
 
     // Call Perplexity API
@@ -73,7 +86,7 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that provides accurate information about events in Tokyo, Japan. Your responses should be in valid JSON format when requested.'
+            content: 'You are a helpful assistant that provides accurate information about events in Tokyo, Japan. Your responses should be in valid JSON format when requested. Provide as many events as possible, aiming for at least 30-50 events in your response.'
           },
           {
             role: 'user',
@@ -81,7 +94,7 @@ export async function fetchEvents(params: SearchParams): Promise<Event[]> {
           }
         ],
         temperature: 0.2,
-        max_tokens: 2000,
+        max_tokens: 4000,
       }),
     });
 
@@ -152,7 +165,7 @@ export async function fetchEventById(eventId: string): Promise<Event | null> {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that provides accurate and detailed information about events in Tokyo, Japan. Your responses should be in valid JSON format when requested.'
+            content: 'You are a helpful assistant that provides accurate and detailed information about events in Tokyo, Japan. Your responses should be in valid JSON format when requested. Provide rich, detailed descriptions for event details.'
           },
           {
             role: 'user',
@@ -160,7 +173,7 @@ export async function fetchEventById(eventId: string): Promise<Event | null> {
           }
         ],
         temperature: 0.2,
-        max_tokens: 2000,
+        max_tokens: 2500,
       }),
     });
 
