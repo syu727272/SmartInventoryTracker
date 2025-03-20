@@ -79,7 +79,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { username, password } = insertUserSchema.parse(req.body);
+      // Log the request body for debugging
+      console.log("Registration request body:", req.body);
+      
+      // Validate with more detailed error handling
+      let userData;
+      try {
+        userData = insertUserSchema.parse(req.body);
+      } catch (zodError) {
+        if (zodError instanceof z.ZodError) {
+          console.error("Validation error:", zodError.errors);
+          return res.status(400).json({ 
+            message: "Input validation failed", 
+            errors: zodError.errors.map(err => ({
+              path: err.path.join('.'),
+              message: err.message
+            }))
+          });
+        }
+        throw zodError;
+      }
+      
+      const { username, password } = userData;
       
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
@@ -96,21 +117,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
       });
       
+      console.log("User created successfully:", { id: user.id, username: user.username });
+      
       // Omit password from response
       const { password: _, ...userWithoutPassword } = user;
       
       // Log in the user
       req.login(user, (err) => {
         if (err) {
+          console.error("Login after registration failed:", err);
           return res.status(500).json({ message: "Login failed after registration" });
         }
         return res.status(201).json(userWithoutPassword);
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid input", errors: error.errors });
-      }
-      return res.status(500).json({ message: "Server error" });
+      console.error("Registration error:", error);
+      return res.status(500).json({ 
+        message: "Server error during registration", 
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
     }
   });
 

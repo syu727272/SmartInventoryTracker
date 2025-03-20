@@ -43,15 +43,15 @@ export default function LoginModal({
 
   // Login form schema
   const loginSchema = z.object({
-    username: z.string().min(3, t("usernameMinLength")),
+    username: z.string().min(3, t("usernameMinLength")).trim(),
     password: z.string().min(6, t("passwordMinLength")),
   });
 
   // Registration form schema
   const registerSchema = z.object({
-    username: z.string().min(3, t("usernameMinLength")),
+    username: z.string().min(3, t("usernameMinLength")).trim(),
     password: z.string().min(6, t("passwordMinLength")),
-    confirmPassword: z.string().min(6, t("confirmPasswordMinLength")),
+    confirmPassword: z.string().min(1, "入力が必要です"),
   }).refine((data) => data.password === data.confirmPassword, {
     message: t("passwordsDontMatch"),
     path: ["confirmPassword"],
@@ -108,6 +108,8 @@ export default function LoginModal({
 
   // Handle register form submission
   const onRegisterSubmit = async (values: RegisterFormValues) => {
+    console.log("Registration values:", values);
+    
     // Validate passwords match before submitting
     if (values.password !== values.confirmPassword) {
       registerForm.setError("confirmPassword", {
@@ -126,7 +128,10 @@ export default function LoginModal({
       });
       onClose();
     } catch (error) {
+      console.error("Registration error:", error);
       const errorMessage = error instanceof Error ? error.message : t("unableToCreateAccount");
+      console.log("Error message:", errorMessage);
+      
       if (errorMessage.includes("Username already taken")) {
         registerForm.setError("username", {
           type: "manual",

@@ -72,7 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Register function
   const register = async (username: string, password: string) => {
-    await registerMutation.mutateAsync({ username, password });
+    try {
+      // Log the data being sent for registration
+      console.log("Sending registration data:", { username, password: password.length });
+      
+      const result = await registerMutation.mutateAsync({ username, password });
+      console.log("Registration successful:", result);
+      return result;
+    } catch (error) {
+      console.error("Registration failed in useAuth:", error);
+      throw error; // Re-throw to handle in the UI component
+    }
   };
 
   // Logout function
