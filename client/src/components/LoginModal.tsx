@@ -102,9 +102,25 @@ export default function LoginModal({
       });
       onClose();
     } catch (error) {
+      // エラーメッセージを改善
+      let errorTitle = t("loginFailed");
+      let errorMessage = t("invalidCredentials");
+      
+      if (error instanceof Error) {
+        if (error.message.includes("User is not registered")) {
+          errorMessage = t("userNotRegistered");
+          errorTitle = t("loginFailed");
+        } else if (error.message.includes("Incorrect password")) {
+          errorMessage = t("incorrectPassword");
+          errorTitle = t("loginFailed");
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: t("loginFailed"),
-        description: error instanceof Error ? error.message : t("invalidCredentials"),
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

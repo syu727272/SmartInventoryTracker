@@ -39,12 +39,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const user = await storage.getUserByUsername(username);
         if (!user) {
-          return done(null, false, { message: "Incorrect username." });
+          return done(null, false, { message: "User is not registered" });
         }
 
         const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
-          return done(null, false, { message: "Incorrect password." });
+          return done(null, false, { message: "Incorrect password" });
         }
 
         return done(null, user);

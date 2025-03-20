@@ -252,6 +252,18 @@ const translations: TranslationDict = {
   searchDescription: {
     ja: "上記の検索フォームから日付と地域を選択して「検索」ボタンをクリックすると、条件に合ったイベントが表示されます。",
     en: "Select dates and district in the search form above, then click the 'Search' button to find events that match your criteria."
+  },
+  userNotRegistered: {
+    ja: "ユーザーが登録されていません",
+    en: "User is not registered"
+  },
+  incorrectPassword: {
+    ja: "パスワードが正しくありません",
+    en: "Incorrect password"
+  },
+  registerFirst: {
+    ja: "まだアカウントをお持ちでない場合は、登録してください",
+    en: "If you don't have an account yet, please register first"
   }
 };
 
