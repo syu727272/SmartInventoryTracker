@@ -47,11 +47,17 @@ export default function LoginModal({
     password: z.string().min(6, t("passwordMinLength")),
   });
 
-  // Registration form schema
+  // Registration form schema - refactored to use optional messages
   const registerSchema = z.object({
-    username: z.string().min(3, t("usernameMinLength")).trim(),
-    password: z.string().min(6, t("passwordMinLength")),
-    confirmPassword: z.string().min(1, "入力が必要です"),
+    username: z.string({
+      required_error: t("usernameMinLength"),
+    }).min(3, t("usernameMinLength")).trim(),
+    password: z.string({
+      required_error: t("passwordMinLength"),
+    }).min(6, t("passwordMinLength")),
+    confirmPassword: z.string({
+      required_error: t("confirmPasswordMinLength"),
+    }).min(1, t("confirmPasswordMinLength")),
   }).refine((data) => data.password === data.confirmPassword, {
     message: t("passwordsDontMatch"),
     path: ["confirmPassword"],
@@ -110,18 +116,13 @@ export default function LoginModal({
   const onRegisterSubmit = async (values: RegisterFormValues) => {
     console.log("Registration values:", values);
     
-    // Validate passwords match before submitting
-    if (values.password !== values.confirmPassword) {
-      registerForm.setError("confirmPassword", {
-        type: "manual",
-        message: t("passwordsDontMatch")
-      });
-      return;
-    }
+    // Let Zod handle the validation through the zodResolver
+    // Only add manual validation for business logic not covered by the schema
     
     setIsLoading(true);
     try {
-      await register(values.username, values.password);
+      // Only send username and password to match the server schema
+      await register(values.username.trim(), values.password);
       toast({
         title: t("registrationSuccessful"),
         description: t("accountCreated"),
