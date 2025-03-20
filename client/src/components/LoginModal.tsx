@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,25 +30,6 @@ interface LoginModalProps {
   onSwitchMode: (mode: "login" | "register") => void;
 }
 
-// Login form schema
-const loginSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-// Registration form schema
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
-
 export default function LoginModal({ 
   isOpen, 
   isRegistering, 
@@ -59,6 +40,25 @@ export default function LoginModal({
   const { login, register } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Login form schema
+  const loginSchema = z.object({
+    username: z.string().min(3, t("usernameMinLength")),
+    password: z.string().min(6, t("passwordMinLength")),
+  });
+
+  // Registration form schema
+  const registerSchema = z.object({
+    username: z.string().min(3, t("usernameMinLength")),
+    password: z.string().min(6, t("passwordMinLength")),
+    confirmPassword: z.string().min(6, t("confirmPasswordMinLength")),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t("passwordsDontMatch"),
+    path: ["confirmPassword"],
+  });
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
+  type RegisterFormValues = z.infer<typeof registerSchema>;
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -78,6 +78,12 @@ export default function LoginModal({
       confirmPassword: "",
     },
   });
+
+  // Update forms when language changes
+  useEffect(() => {
+    loginForm.trigger();
+    registerForm.trigger();
+  }, [t]);
 
   // Handle login form submission
   const onLoginSubmit = async (values: LoginFormValues) => {
@@ -106,7 +112,7 @@ export default function LoginModal({
     if (values.password !== values.confirmPassword) {
       registerForm.setError("confirmPassword", {
         type: "manual",
-        message: "Passwords don't match"
+        message: t("passwordsDontMatch")
       });
       return;
     }
