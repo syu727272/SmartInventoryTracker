@@ -67,7 +67,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Login function
   const login = async (username: string, password: string) => {
-    await loginMutation.mutateAsync({ username, password });
+    try {
+      await loginMutation.mutateAsync({ username, password });
+    } catch (error) {
+      // エラーメッセージをより詳細に変換
+      if (error instanceof Error) {
+        // APIからのエラーメッセージを適切に処理
+        if (error.message.includes("Invalid credentials") || 
+            error.message.includes("Incorrect username")) {
+          throw new Error("User is not registered");
+        } else if (error.message.includes("Incorrect password")) {
+          throw new Error("Incorrect password");
+        }
+      }
+      throw error; // その他のエラーは再スロー
+    }
   };
 
   // Register function

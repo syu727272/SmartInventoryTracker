@@ -105,12 +105,14 @@ export default function LoginModal({
       // エラーメッセージを改善
       let errorTitle = t("loginFailed");
       let errorMessage = t("invalidCredentials");
+      let registerHint = false;
       
       if (error instanceof Error) {
-        if (error.message.includes("User is not registered")) {
+        if (error.message === "User is not registered") {
           errorMessage = t("userNotRegistered");
           errorTitle = t("loginFailed");
-        } else if (error.message.includes("Incorrect password")) {
+          registerHint = true;
+        } else if (error.message === "Incorrect password") {
           errorMessage = t("incorrectPassword");
           errorTitle = t("loginFailed");
         } else {
@@ -123,6 +125,16 @@ export default function LoginModal({
         description: errorMessage,
         variant: "destructive",
       });
+      
+      // ユーザーが登録されていない場合は登録を促すメッセージも表示
+      if (registerHint) {
+        setTimeout(() => {
+          toast({
+            title: t("register"),
+            description: t("registerFirst"),
+          });
+        }, 1000);
+      }
     } finally {
       setIsLoading(false);
     }
