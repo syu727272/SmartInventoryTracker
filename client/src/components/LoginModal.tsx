@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -41,41 +41,46 @@ export default function LoginModal({
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Login form schema
+  // ログインフォームのスキーマ
   const loginSchema = z.object({
-    username: z.string().min(3, t("usernameMinLength")).trim(),
-    password: z.string().min(6, t("passwordMinLength")),
+    username: z.string()
+      .min(3, t("usernameMinLength"))
+      .trim(),
+    password: z.string()
+      .min(6, t("passwordMinLength")),
   });
 
-  // Registration form schema - refactored to use optional messages
+  // 登録フォームのスキーマ
   const registerSchema = z.object({
-    username: z.string({
-      required_error: t("usernameMinLength"),
-    }).min(3, t("usernameMinLength")).trim(),
-    password: z.string({
-      required_error: t("passwordMinLength"),
-    }).min(6, t("passwordMinLength")),
-    confirmPassword: z.string({
-      required_error: t("confirmPasswordMinLength"),
-    }).min(1, t("confirmPasswordMinLength")),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: t("passwordsDontMatch"),
-    path: ["confirmPassword"],
-  });
+    username: z.string()
+      .min(3, t("usernameMinLength"))
+      .trim(),
+    password: z.string()
+      .min(6, t("passwordMinLength")),
+    confirmPassword: z.string()
+      .min(1, t("confirmPasswordMinLength")),
+  }).refine(
+    (data) => data.password === data.confirmPassword, 
+    {
+      message: t("passwordsDontMatch"),
+      path: ["confirmPassword"], 
+    }
+  );
 
   type LoginFormValues = z.infer<typeof loginSchema>;
   type RegisterFormValues = z.infer<typeof registerSchema>;
 
-  // Login form
+  // ログインフォーム
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: "",
       password: "",
     },
+    mode: "onChange", // リアルタイム検証
   });
 
-  // Register form
+  // 登録フォーム
   const registerForm = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -83,15 +88,10 @@ export default function LoginModal({
       password: "",
       confirmPassword: "",
     },
+    mode: "onChange", // リアルタイム検証
   });
 
-  // Update forms when language changes
-  useEffect(() => {
-    loginForm.trigger();
-    registerForm.trigger();
-  }, [t]);
-
-  // Handle login form submission
+  // ログインハンドラー
   const onLoginSubmit = async (values: LoginFormValues) => {
     setIsLoading(true);
     try {
@@ -112,17 +112,19 @@ export default function LoginModal({
     }
   };
 
-  // Handle register form submission
+  // 登録ハンドラー
   const onRegisterSubmit = async (values: RegisterFormValues) => {
-    console.log("Registration values:", values);
+    // サーバーに送信するデータ (confirmPasswordを除く)
+    const userData = {
+      username: values.username,
+      password: values.password
+    };
     
-    // Let Zod handle the validation through the zodResolver
-    // Only add manual validation for business logic not covered by the schema
+    console.log("Submitting registration data:", userData);
     
     setIsLoading(true);
     try {
-      // Only send username and password to match the server schema
-      await register(values.username.trim(), values.password);
+      await register(userData.username, userData.password);
       toast({
         title: t("registrationSuccessful"),
         description: t("accountCreated"),
@@ -131,7 +133,6 @@ export default function LoginModal({
     } catch (error) {
       console.error("Registration error:", error);
       const errorMessage = error instanceof Error ? error.message : t("unableToCreateAccount");
-      console.log("Error message:", errorMessage);
       
       if (errorMessage.includes("Username already taken")) {
         registerForm.setError("username", {
@@ -152,12 +153,14 @@ export default function LoginModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-sm" aria-describedby="login-modal-description">
+      <DialogContent
+        className="sm:max-w-md"
+        aria-describedby="login-modal-description"
+      >
         <div id="login-modal-description" className="sr-only">
-          {isRegistering 
-            ? t("registerDescription") 
-            : t("loginDescription")}
+          {isRegistering ? t("registerDescription") : t("loginDescription")}
         </div>
+        
         <DialogHeader className="bg-primary px-4 py-2 text-white rounded-t-md -mt-4 -mx-4 mb-4">
           <div className="flex justify-between items-center">
             <DialogTitle>
@@ -174,119 +177,180 @@ export default function LoginModal({
           </div>
         </DialogHeader>
 
-        {!isRegistering ? (
-          /* Login Form */
-          <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-              <FormField
-                control={loginForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("username")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("usernamePlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={loginForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t("passwordPlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-between pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => onSwitchMode("register")}
-                >
-                  {t("register")}
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-primary hover:bg-indigo-700"
-                  disabled={isLoading}
-                >
-                  {t("login")}
-                </Button>
-              </div>
-            </form>
-          </Form>
+        {isRegistering ? (
+          <RegisterFormContent 
+            form={registerForm}
+            onSubmit={onRegisterSubmit}
+            isLoading={isLoading}
+            onSwitchMode={() => onSwitchMode("login")}
+          />
         ) : (
-          /* Register Form */
-          <Form {...registerForm}>
-            <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-              <FormField
-                control={registerForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("username")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("usernamePlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={registerForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t("passwordPlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={registerForm.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("confirmPassword")}</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder={t("confirmPasswordPlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-between pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={() => onSwitchMode("login")}
-                >
-                  {t("backToLogin")}
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-primary hover:bg-indigo-700"
-                  disabled={isLoading}
-                >
-                  {t("register")}
-                </Button>
-              </div>
-            </form>
-          </Form>
+          <LoginFormContent 
+            form={loginForm}
+            onSubmit={onLoginSubmit}
+            isLoading={isLoading}
+            onSwitchMode={() => onSwitchMode("register")}
+          />
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ログインフォームのコンテンツ
+function LoginFormContent({
+  form,
+  onSubmit,
+  isLoading,
+  onSwitchMode
+}: {
+  form: ReturnType<typeof useForm<any>>;
+  onSubmit: (values: any) => void;
+  isLoading: boolean;
+  onSwitchMode: () => void;
+}) {
+  const { t } = useLanguage();
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("username")}</FormLabel>
+              <FormControl>
+                <Input placeholder={t("usernamePlaceholder")} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("password")}</FormLabel>
+              <FormControl>
+                <Input 
+                  type="password" 
+                  placeholder={t("passwordPlaceholder")} 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-between pt-2">
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={onSwitchMode}
+          >
+            {t("register")}
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-indigo-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "..." : t("login")}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+// 登録フォームのコンテンツ
+function RegisterFormContent({
+  form,
+  onSubmit,
+  isLoading,
+  onSwitchMode
+}: {
+  form: ReturnType<typeof useForm<any>>;
+  onSubmit: (values: any) => void;
+  isLoading: boolean;
+  onSwitchMode: () => void;
+}) {
+  const { t } = useLanguage();
+  
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("username")}</FormLabel>
+              <FormControl>
+                <Input placeholder={t("usernamePlaceholder")} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("password")}</FormLabel>
+              <FormControl>
+                <Input 
+                  type="password" 
+                  placeholder={t("passwordPlaceholder")} 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("confirmPassword")}</FormLabel>
+              <FormControl>
+                <Input 
+                  type="password" 
+                  placeholder={t("confirmPasswordPlaceholder")} 
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-between pt-2">
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={onSwitchMode}
+          >
+            {t("backToLogin")}
+          </Button>
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-indigo-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "..." : t("register")}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

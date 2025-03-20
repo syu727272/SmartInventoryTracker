@@ -73,15 +73,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register function
   const register = async (username: string, password: string) => {
     try {
-      // Log the data being sent for registration
-      console.log("Sending registration data:", { username, password: password.length });
+      // データをログに記録し、送信する
+      console.log("Sending registration data:", { 
+        username, 
+        password: "********", // セキュリティのために実際のパスワードは表示しない
+        passwordLength: password.length
+      });
       
-      const result = await registerMutation.mutateAsync({ username, password });
+      // mutateAsyncを呼び出す際、引数をオブジェクトとして渡す
+      const result = await registerMutation.mutateAsync({ 
+        username: username.trim(), 
+        password: password 
+      });
+      
       console.log("Registration successful:", result);
       return result;
     } catch (error) {
       console.error("Registration failed in useAuth:", error);
-      throw error; // Re-throw to handle in the UI component
+      throw error; // UI側でエラーを処理するために再スローする
     }
   };
 
