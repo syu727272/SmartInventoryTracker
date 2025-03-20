@@ -244,6 +244,14 @@ const translations: TranslationDict = {
   welcomeDescription: {
     ja: "ログインして東京の最新イベントを検索・お気に入り登録しましょう。あなたの興味に合わせたイベント情報をご提供します。",
     en: "Login to search and save your favorite events in Tokyo. We'll help you discover events that match your interests."
+  },
+  searchHint: {
+    ja: "検索してイベントを見つけよう",
+    en: "Search to find events"
+  },
+  searchDescription: {
+    ja: "上記の検索フォームから日付と地域を選択して「検索」ボタンをクリックすると、条件に合ったイベントが表示されます。",
+    en: "Select dates and district in the search form above, then click the 'Search' button to find events that match your criteria."
   }
 };
 

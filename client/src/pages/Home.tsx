@@ -19,14 +19,18 @@ export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Query for events - only enabled if user is logged in
+  // 検索が実行されたかどうかを追跡するフラグ
+  const [searchExecuted, setSearchExecuted] = useState(false);
+  
+  // イベント検索クエリ - ユーザーがログインしていて、検索が実行された場合のみ有効
   const { data: events, isLoading: isEventsLoading, error } = useQuery<Event[]>({
     queryKey: ['/api/events', searchParams.dateFrom, searchParams.dateTo, searchParams.district],
-    enabled: !!user && !!searchParams,
+    enabled: !!user && !!searchParams && searchExecuted,
   });
 
   const handleSearch = (newParams: SearchParams) => {
     setSearchParams(newParams);
+    setSearchExecuted(true); // 検索が実行されたことをマーク
   };
 
   const handleOpenLogin = (registerMode = false) => {
@@ -52,12 +56,24 @@ export default function Home() {
             <SearchForm onSearch={handleSearch} initialValues={searchParams} />
           </div>
 
-          {/* Search Results */}
-          <SearchResults 
-            events={events || []} 
-            isLoading={isEventsLoading} 
-            error={error instanceof Error ? error : undefined}
-          />
+          {/* Search Results - 検索が実行された場合のみ表示 */}
+          {searchExecuted ? (
+            <SearchResults 
+              events={events || []} 
+              isLoading={isEventsLoading} 
+              error={error instanceof Error ? error : undefined}
+            />
+          ) : (
+            <div className="bg-white rounded-lg shadow-md p-6 text-center py-12">
+              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {t("searchHint")}
+              </h3>
+              <p className="text-gray-500 max-w-md mx-auto">
+                {t("searchDescription")}
+              </p>
+            </div>
+          )}
         </>
       ) : (
         // Unauthenticated user view - show welcome screen
