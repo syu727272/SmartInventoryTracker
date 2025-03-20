@@ -85,14 +85,14 @@ export default function LoginModal({
     try {
       await login(values.username, values.password);
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: t("loginSuccessful"),
+        description: t("welcomeBack"),
       });
       onClose();
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        title: t("loginFailed"),
+        description: error instanceof Error ? error.message : t("invalidCredentials"),
         variant: "destructive",
       });
     } finally {
@@ -115,20 +115,20 @@ export default function LoginModal({
     try {
       await register(values.username, values.password);
       toast({
-        title: "Registration successful",
-        description: "Your account has been created",
+        title: t("registrationSuccessful"),
+        description: t("accountCreated"),
       });
       onClose();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unable to create account";
+      const errorMessage = error instanceof Error ? error.message : t("unableToCreateAccount");
       if (errorMessage.includes("Username already taken")) {
         registerForm.setError("username", {
           type: "manual",
-          message: "Username already taken"
+          message: t("usernameAlreadyTaken")
         });
       } else {
         toast({
-          title: "Registration failed",
+          title: t("registrationFailed"),
           description: errorMessage,
           variant: "destructive",
         });
@@ -173,7 +173,7 @@ export default function LoginModal({
                   <FormItem>
                     <FormLabel>{t("username")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="username" {...field} />
+                      <Input placeholder={t("usernamePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +186,7 @@ export default function LoginModal({
                   <FormItem>
                     <FormLabel>{t("password")}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder={t("passwordPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -222,7 +222,7 @@ export default function LoginModal({
                   <FormItem>
                     <FormLabel>{t("username")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="username" {...field} />
+                      <Input placeholder={t("usernamePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -235,7 +235,7 @@ export default function LoginModal({
                   <FormItem>
                     <FormLabel>{t("password")}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder={t("passwordPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,7 +248,7 @@ export default function LoginModal({
                   <FormItem>
                     <FormLabel>{t("confirmPassword")}</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="******" {...field} />
+                      <Input type="password" placeholder={t("confirmPasswordPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

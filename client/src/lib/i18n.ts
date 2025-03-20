@@ -184,6 +184,58 @@ const translations: TranslationDict = {
   confirmPasswordPlaceholder: {
     ja: "パスワードを再入力",
     en: "Confirm password"
+  },
+  loginSuccessful: {
+    ja: "ログイン成功",
+    en: "Login successful"
+  },
+  welcomeBack: {
+    ja: "おかえりなさい！",
+    en: "Welcome back!"
+  },
+  loginFailed: {
+    ja: "ログイン失敗",
+    en: "Login failed"
+  },
+  invalidCredentials: {
+    ja: "認証情報が無効です",
+    en: "Invalid credentials"
+  },
+  registrationSuccessful: {
+    ja: "登録成功",
+    en: "Registration successful"
+  },
+  accountCreated: {
+    ja: "アカウントが作成されました",
+    en: "Your account has been created"
+  },
+  registrationFailed: {
+    ja: "登録失敗",
+    en: "Registration failed"
+  },
+  unableToCreateAccount: {
+    ja: "アカウントを作成できません",
+    en: "Unable to create account"
+  },
+  usernameAlreadyTaken: {
+    ja: "ユーザー名はすでに使用されています",
+    en: "Username already taken"
+  },
+  passwordsDontMatch: {
+    ja: "パスワードが一致しません",
+    en: "Passwords don't match"
+  },
+  usernameMinLength: {
+    ja: "ユーザー名は3文字以上である必要があります",
+    en: "Username must be at least 3 characters"
+  },
+  passwordMinLength: {
+    ja: "パスワードは6文字以上である必要があります",
+    en: "Password must be at least 6 characters"
+  },
+  confirmPasswordMinLength: {
+    ja: "確認用パスワードは6文字以上である必要があります",
+    en: "Confirm password must be at least 6 characters"
   }
 };
 
