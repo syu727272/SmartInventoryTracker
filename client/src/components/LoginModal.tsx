@@ -130,11 +130,17 @@ export default function LoginModal({
       }
       
       // トースト通知を表示
-      toast({
+      console.log("Displaying toast with:", {
+        title: errorTitle,
+        description: errorMessage,
+        variant: "destructive"
+      });
+      const result = toast({
         title: errorTitle,
         description: errorMessage,
         variant: "destructive",
       });
+      console.log("Toast result:", result);
       
       // ユーザーが登録されていない場合は登録を促すメッセージも表示
       if (registerHint) {
